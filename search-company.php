@@ -30,10 +30,10 @@ if (isset($_GET['error'])) {
         exit;
     }
 } else { 
-    if ((empty($_SESSION['expires_at'])) || (time() > $_SESSION['expires_at'])) {
+    // if ((empty($_SESSION['expires_at'])) || (time() > $_SESSION['expires_at'])) {
         // Token has expired, clear the state
         $_SESSION = array();
-    }
+    // }
     if (empty($_SESSION['access_token'])) {
         // Start authorization process
         getAuthorizationCode();
@@ -42,9 +42,10 @@ if (isset($_GET['error'])) {
  
 // Congratulations! You have a valid token. Now fetch your profile 
 // $user = fetch('GET', '/v1/people/~:(firstName,lastName)');
-$company = fetch('GET', '/v1/companies/universal-name='.$query_string);
 // print "Hello $user->firstName $user->lastName.";
 // var_dump($user);
+$query_string = 'linkedin';
+$company = fetch('GET', '/v1/companies/universal-name='.$query_string);
 print "Company $company->name";
 var_dump($company);
 exit;
