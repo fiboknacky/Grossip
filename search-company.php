@@ -2,20 +2,34 @@
 // Change these
 define('API_KEY',      'zsw4h3gaddha'                                          );
 define('API_SECRET',   'IPMQifmffPBJiSsr'                                       );
-// define('REDIRECT_URI', 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME']);
-define('REDIRECT_URI', 'http://localhost:8888' . $_SERVER['SCRIPT_NAME']);
+if (strpos($_SERVER['SERVER_NAME'], 'localhost') !== FALSE)
+    define('REDIRECT_URI', 'http://localhost:8888' . $_SERVER['SCRIPT_NAME']);
+else 
+    define('REDIRECT_URI', 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME']);
 define('SCOPE',        'r_fullprofile r_emailaddress rw_nus'                        );
  
 // You'll probably use a database
-session_name('linkedin');
+session_name('linkedin-api');
 session_start();
- 
-// OAuth 2 Control Flow
+
+// check form submit
+if (isset($_POST["search"]))
+{
+    $_SESSION["searched"] = TRUE;
+    $_SESSION["query"] = $_POST["query"];
+} 
+elseif (!isset($_SESSION["searched"]))
+{
+    header("Location: main.php");
+    exit;
+}
 // if (!isset($_GET['query'])){
 //     exit;
 // } else {
-    $query_string = $_GET['query'];
+    // $query_string = $_GET['query'];
 // }
+
+// OAuth 2 Control Flow
 if (isset($_GET['error'])) {
     // LinkedIn returned an error
     print $_GET['error'] . ': ' . $_GET['error_description'];
@@ -30,10 +44,13 @@ if (isset($_GET['error'])) {
         exit;
     }
 } else { 
-    // if ((empty($_SESSION['expires_at'])) || (time() > $_SESSION['expires_at'])) {
+    if ((empty($_SESSION['expires_at'])) || (time() > $_SESSION['expires_at'])) {
         // Token has expired, clear the state
+        $tmp = $_SESSION["query"];
         $_SESSION = array();
-    // }
+        $_SESSION["searched"] = TRUE;
+        $_SESSION["query"] = $tmp;
+    }
     if (empty($_SESSION['access_token'])) {
         // Start authorization process
         getAuthorizationCode();
@@ -42,12 +59,55 @@ if (isset($_GET['error'])) {
  
 // Congratulations! You have a valid token. Now fetch your profile 
 // $user = fetch('GET', '/v1/people/~:(firstName,lastName)');
-// print "Hello $user->firstName $user->lastName.";
+// print "<br>Hello $user->firstName $user->lastName.";
 // var_dump($user);
-$query_string = 'linkedin';
-$company = fetch('GET', '/v1/companies/universal-name='.$query_string);
-print "Company $company->name";
-var_dump($company);
+$query_string = (!empty($_SESSION["query"]))?$_SESSION["query"]:'microsoft';
+$company_obj = fetch('GET', '/v1/company-search','keywords',$query_string);
+$company_list = $company_obj->companies->values;
+
+/* use the first promising company found in the list */
+foreach ($company_list as $company){
+    // print "<br>$company->name<br>{$_SESSION['query']}";
+    // if perfect matchd, use this company entry
+    if (strcasecmp(trim($company->name), trim($_SESSION["query"]))==0)
+    {
+        $matched_company = $company;
+        break;
+    }
+    // if partly matched, use the first one that occurs
+    if (!isset($matched_company) && (stristr($company->name, $_SESSION["query"]) || 
+        stristr($_SESSION["query"], $company->name) )){
+        $matched_company = $company;
+    }
+}
+// var_dump($matched_company);
+
+$field_selectors = ':(id,name,ticker,description,universal-name,website-url,logo-url,industries'.
+    ',blog-rss-url,twitter-id,employee-count-range,stock-exchange,locations,founded-year)';
+$company_obj = fetch('GET', '/v1/companies/'.$matched_company->id.$field_selectors);
+
+// print_r($company_obj);
+echo "<br>info";
+foreach ($company_obj as $name => $item) {
+    echo "<br><b>$name </b>";
+    print_r($item);
+}
+
+$_SESSION["company"] = $company_obj;
+ob_start();
+require "sendback-company-info.php";
+$response = ob_get_clean();
+// var_dump($response);
+
+// print "<br>Company {$matched_company->name}<br>";
+
+// $query_string = 'linkedin';
+// $job = fetch('GET', '/v1/job-search','keywords',$query_string);
+// print "<br>Job $job->name";
+// var_dump($job);
+
+// return response to jQuery
+echo $response;
 exit;
  
 function getAuthorizationCode() {
@@ -102,10 +162,17 @@ function getAccessToken() {
     return true;
 }
  
-function fetch($method, $resource, $body = '') {
-    $params = array('oauth2_access_token' => $_SESSION['access_token'],
-                    'format' => 'json',
-              );
+function fetch($method, $resource, $query_name = '', $query_value = '', $body = '') {
+    if (empty($query_name)) {
+        $params = array('oauth2_access_token' => $_SESSION['access_token'],
+                        'format' => 'json',
+                  );
+    } else {
+        $params = array('oauth2_access_token' => $_SESSION['access_token'],
+                        'format' => 'json',
+                        $query_name => $query_value,
+                  );
+    }
      
     // Need to use HTTPS
     $url = 'https://api.linkedin.com' . $resource . '?' . http_build_query($params);
@@ -119,7 +186,7 @@ function fetch($method, $resource, $body = '') {
  
  
     // Hocus Pocus
-    print_r($url);
+    // print_r($url);
     $response = file_get_contents($url, false, $context);
  
     // Native PHP object, please

@@ -106,8 +106,8 @@ body  {
 
 
 
-<img id="banner" src="Rakumi Banner.png" width="100" height="100" alt="banner" /> 
-<form action="search.php" method="post" enctype="multipart/form-data" name="form1">
+<img id="banner" src="images/gree-logo.png" width="350em" height="100em" alt="banner" /> 
+<form action="search-company.php" method="post" enctype="multipart/form-data">
 	<p>Search for a company (e.g., GREE): 
         <input type="text" name="query">
         <input type="submit" name="search" value="GO!">
