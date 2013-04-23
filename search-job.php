@@ -12,21 +12,10 @@ define('SCOPE',        'r_fullprofile r_emailaddress rw_nus'                    
 session_name('linkedin-api');
 session_start();
 
-// check form submit
-if (isset($_POST["search"]))
-{
-    $_SESSION["searched"] = TRUE;
-    $_SESSION["query"] = $_POST["query"];
-} 
-elseif (!isset($_SESSION["searched"]))
-{
-    header("Location: main.php");
-    exit;
-}
-// if (!isset($_GET['query'])){
+// if (!isset($_SESSION["companyname"]))
+// {
+//     header("Location: main.php");
 //     exit;
-// } else {
-    // $query_string = $_GET['query'];
 // }
 
 // OAuth 2 Control Flow
@@ -46,10 +35,12 @@ if (isset($_GET['error'])) {
 } else { 
     if ((empty($_SESSION['expires_at'])) || (time() > $_SESSION['expires_at'])) {
         // Token has expired, clear the state
-        $tmp = $_SESSION["query"];
-        $_SESSION = array();
-        $_SESSION["searched"] = TRUE;
-        $_SESSION["query"] = $tmp;
+        header("Location: main.php");
+        exit;
+        // $tmp = $_SESSION["query"];
+        // $_SESSION = array();
+        // $_SESSION["searched"] = TRUE;
+        // $_SESSION["query"] = $tmp;
     }
     if (empty($_SESSION['access_token'])) {
         // Start authorization process
@@ -61,30 +52,46 @@ if (isset($_GET['error'])) {
 // $user = fetch('GET', '/v1/people/~:(firstName,lastName)');
 // print "<br>Hello $user->firstName $user->lastName.";
 // var_dump($user);
-$query_string = (!empty($_SESSION["query"]))?$_SESSION["query"]:'gree';
-$company_obj = fetch('GET', '/v1/company-search','keywords',$query_string);
-$company_list = $company_obj->companies->values;
+$query_company = (!empty($_SESSION["companyname"]))?$_SESSION["companyname"]:'microsoft';
+$job_obj = fetch('GET', '/v1/job-search','company-name',$query_company);
+var_dump($job_obj);
+$job_list = $job_obj->jobs->values;
 
-/* use the first promising company found in the list */
-foreach ($company_list as $company){
+echo "<br><br><hr>";
+foreach ($job_list as $job){
+    print_r($job->id);
+        echo "<br>";
+    print_r($job->company->name);
+        echo "<br>";
+    print_r($job->jobPoster->firstName);
+        echo "<br>";
+    print_r($job->jobPoster->lastName);
+        echo "<br>";
+    print_r($job->jobPoster->headline);
+        echo "<br>";
+    print_r(nl2br($job->descriptionSnippet));
+        echo "<br>";
+    print_r($job->locationDescription);
+    echo "<br>";
+        echo "<br>";
     // print "<br>$company->name<br>{$_SESSION['query']}";
     // if perfect matchd, use this company entry
-    if (strcasecmp(trim($company->name), trim($_SESSION["query"]))==0)
-    {
-        $matched_company = $company;
-        break;
-    }
-    // if partly matched, use the first one that occurs
-    if (!isset($matched_company) && (stristr($company->name, $_SESSION["query"]) || 
-        stristr($_SESSION["query"], $company->name) )){
-        $matched_company = $company;
-    }
+    // if (strcasecmp(trim($company->name), trim($_SESSION["query"]))==0)
+    // {
+    //     $matched_company = $company;
+    //     break;
+    // }
+    // // if partly matched, use the first one that occurs
+    // if (!isset($matched_company) && (stristr($company->name, $_SESSION["query"]) || 
+    //     stristr($_SESSION["query"], $company->name) )){
+    //     $matched_company = $company;
+    // }
 }
 // var_dump($matched_company);
 
-$field_selectors = ':(id,name,ticker,description,universal-name,website-url,logo-url,industries'.
-    ',blog-rss-url,twitter-id,employee-count-range,stock-exchange,locations,founded-year)';
-$company_obj = fetch('GET', '/v1/companies/'.$matched_company->id.$field_selectors);
+// $field_selectors = ':(id,name,ticker,description,universal-name,website-url,logo-url,industries'.
+//     ',blog-rss-url,twitter-id,employee-count-range,stock-exchange,locations,founded-year)';
+// $company_obj = fetch('GET', '/v1/companies/'.$matched_company->id.$field_selectors);
 
 // print_r($company_obj);
 // echo "<br>info";
@@ -93,7 +100,8 @@ $company_obj = fetch('GET', '/v1/companies/'.$matched_company->id.$field_selecto
 //     print_r($item);
 // }
 
-$_SESSION["companyname"] = $company_obj->name;
+/*
+$_SESSION["companyid"] = $company_obj->id;
 $_SESSION["company"] = $company_obj;
 ob_start();
 require "sendback-company-info.php";
@@ -109,6 +117,7 @@ $response = ob_get_clean();
 
 // return response to jQuery
 echo $response;
+*/
 exit;
  
 function getAuthorizationCode() {

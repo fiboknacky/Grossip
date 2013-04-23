@@ -56,6 +56,14 @@ body  {
  	margin: 0 1em 0 21em; /* the right margin can be given in ems or pixels. It creates the space down the right side of the page. */
 } 
 
+.input-text
+{
+width:180px;
+height:40px;
+/*font:Verdana, Geneva, sans-serif;*/
+font-size:25px;
+}
+
 #footer
 {
 	height: 50px;
@@ -95,10 +103,50 @@ body  {
 /* the above proprietary zoom property gives IE the hasLayout it needs to avoid several bugs */
 </style>
 <![endif]-->
-<link type="text/css" href="jquery-ui-1.10.2.custom/css/redmond/jquery-ui-1.10.2.custom.css" rel="stylesheet" />	
-
+		<link type="text/css" href="jquery-ui-1.10.2.custom/css/redmond/jquery-ui-1.10.2.custom.css" rel="stylesheet" />	
 		<script type="text/javascript" src="jquery-ui-1.10.2.custom/js/jquery-1.9.1.js"></script>
 		<script type="text/javascript" src="jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js"></script>
+		<script type="text/javascript">
+            $(document).ready(function(){ 
+            	$('input').addClass("ui-corner-all");
+            	$("button, input:submit, input:button").button();
+            	$('input').addClass("ui-widget-content");
+                $("#container").hide();
+                // $("#mainContent").hide();
+                $("#searchform").submit(function (event){
+                	event.preventDefault();
+                	var $form = $( this ),
+				    term = $form.find( 'input[name="query"]' ).val(),
+				    url = $form.attr( 'action' );
+				 
+				  	/* Send the data using post */
+				  	var posting = $.post( url, { query: term, search: "GO!" } );
+				 
+				 	$('#container').toggle(false);
+				   	/* Put the results in a div */
+				  	posting.done(function( data ) {
+				    	// var content = $( data ).find( '#content' );
+				    	var content = data;
+				    	if (content == "NO"){
+				    		$( "#container" ).empty().append("<center>No Information Available. Please search other companies.</center>");
+				    	} else {
+				    		$( "#sidebar1" ).empty().append( content );	
+				    	}
+				    	
+				    	$('#container').slideDown('slow');
+                	});
+				 });
+
+                // $("#freewordsubmit").click(function(e){
+                //     $('#container').toggle(false);
+                //     $.post('search-company.php', $('#searchform').serialize() +"&"+$.param(api_params), function(data) {
+                //         $("#container").html(data);
+                //         $('#container').slideDown('slow');
+                //     });
+                    // return e.preventDefault();
+                // });
+            });
+        </script>
 		
 </head>
 
@@ -106,33 +154,28 @@ body  {
 
 
 
-<img id="banner" src="images/gree-logo.png" width="350em" height="100em" alt="banner" /> 
-<form action="search-company.php" method="post" enctype="multipart/form-data">
-	<p>Search for a company (e.g., GREE): 
-        <input type="text" name="query">
+<img id="banner" src="images/grossip-logo.png" width="450em" height="108em" alt="banner" /> 
+<form action="search-company.php" method="post" enctype="multipart/form-data" id="searchform">
+	<h2>Search for a company (e.g., GREE): 
+        <input type="text" name="query" class="input-text">
         <input type="submit" name="search" value="GO!">
-        </p>
+        </h2>
 </form>
 
 <div id="container">
   <div id="sidebar1">
     <h3>About GREE, Inc.</h3>
-    <p>The background color on this div will only show for the length of the content. If you'd like a dividing line instead, place a border on the left side of the #mainContent div if the #mainContent div will always contain more content than the #sidebar1 div. </p>
-    <p>Donec eu mi sed turpis feugiat feugiat. Integer turpis arcu, pellentesque  eget, cursus et, fermentum ut, sapien. </p>
+    <p>Information</p>
   <!-- end #sidebar1 --></div>
   <div id="mainContent">
-    <h1>Google Search</h1>
+    <h2>Jobs from GREE, Inc.</h2>
     <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Praesent aliquam,  justo convallis luctus rutrum, erat nulla fermentum diam, at nonummy quam  ante ac quam. Maecenas urna purus, fermentum id, molestie in, commodo  porttitor, felis. Nam blandit quam ut lacus. </p>
-    <p>Quisque ornare risus quis  ligula. Phasellus tristique purus a augue condimentum adipiscing. Aenean  sagittis. Etiam leo pede, rhoncus venenatis, tristique in, vulputate at,  odio. Donec et ipsum et sapien vehicula nonummy. Suspendisse potenti. Fusce  varius urna id quam. Sed neque mi, varius eget, tincidunt nec, suscipit id,  libero. In eget purus. Vestibulum ut nisl. Donec eu mi sed turpis feugiat  feugiat. Integer turpis arcu, pellentesque eget, cursus et, fermentum ut,  sapien. Fusce metus mi, eleifend sollicitudin, molestie id, varius et, nibh.  Donec nec libero.</p>
-    <h2>H2 level heading </h2>
-    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Praesent aliquam,  justo convallis luctus rutrum, erat nulla fermentum diam, at nonummy quam  ante ac quam. Maecenas urna purus, fermentum id, molestie in, commodo  porttitor, felis. Nam blandit quam ut lacus. Quisque ornare risus quis  ligula. Phasellus tristique purus a augue condimentum adipiscing. Aenean  sagittis. Etiam leo pede, rhoncus venenatis, tristique in, vulputate at, odio.</p>
+    <p>Quisque ornare risus quis  ligula. Phasellus tristique purus a augue condimentum adipiscing. Aenean  sagittis. Etiam leo pede, rhoncus venenatis, tristique in, vulputate at,  odio. Donec et ipsum et sapien vehicula nonummy. Suspendisse potenti. Fusce  varius urna id quam. Sed neque mi, varius eget, tincidunt nec, suscipit id,  libero. In eget purus. Vestibulum ut nisl. Donec eu mi sed turpis feugiat  feugiat. Integer turpis arcu, pellentesque eget, cursus et, fermentum ut,  sapien. Fusce metus mi, eleifend sollicitudin, molestie id, varius et, nibh.  Donec nec libero.</p>    
 	<!-- end #mainContent --></div>
 	<!-- This clearing element should immediately follow the #mainContent div in order to force the #container div to contain all child floats --><br class="clearfloat" />
 <!-- end #container --></div>
 <div id="footer">
-
-	<p>Copyright (c) 2013 GREE, Inc.</p>
-
+	<p>Copyright (c) 2013 GREE, Inc. Designed By <a href="http://www.linkedin.com/profile/view?id=100814263" target="_blank">Thanet Knack Praneenararat</a></p>
 </div>
 </body>
 </html>

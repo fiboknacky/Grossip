@@ -1,12 +1,20 @@
 <?php
-session_start();
+// session_start();
 // var_dump($_SESSION['company']);
 $details = $_SESSION['company'];
+if (empty($details) || $details==NULL || empty($details->name))
+{
+  echo 'NO';
+  exit;
+}
 // $details = $company_obj;
 
-echo '<table width=" 100%" border="0" cellspacing="0" cellpadding="0">
+echo '<table width=" 100%" border="0" cellspacing="2" cellpadding="0">
+  <tr> 
+    <th colspan="2"><h3>About '.$details->name.'</h3></th>
+  </tr>
   <tr>
-    <th colspan="2" align="center" scope="row"><img name="logo" align="center" src="'.$details->logoUrl.'"></th>
+    <th colspan="2" align="center" scope="row" bgcolor="#FFFFFF"><img name="logo" align="center" src="'.$details->logoUrl.'"></th>
   </tr>';
 if (!empty($details->name)){
  	echo '<tr>
@@ -17,10 +25,10 @@ if (!empty($details->name)){
 if (!empty($details->websiteUrl)){
   echo '<tr>
     <th scope="row">Website</th>
-    <td>'.$details->websiteUrl.'</td>
+    <td><a href="'.$details->websiteUrl.'" target="_blank">'.$details->websiteUrl.'</a></td>
   </tr>';
 }
-if (!empty($details->industries)){
+if (!empty($details->twitterId)){
 	echo '<tr>
     <th scope="row">Twitter ID</th>
     <td>'.$details->twitterId.'</td>
@@ -52,8 +60,12 @@ if (!empty($details->industries)){
 }
 if (!empty($details->ticker)){
 	echo '<tr>
-    <th scope="row">Ticker (Stock)</th>
-    <td>'.$details->ticker.'</td>
+    <th scope="row">Ticker (Stock Exchange)</th>
+    <td>'.$details->ticker;
+  if (!empty($details->stockExchange)){
+    echo ' ('.$details->stockExchange->name.')';
+  }
+  echo '</td>
   </tr>';
 }
 echo '</table>';
