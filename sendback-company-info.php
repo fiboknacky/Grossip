@@ -1,5 +1,6 @@
 <?php
-// session_start();
+// assume that session has been started in the file calling this one
+
 // var_dump($_SESSION['company']);
 $details = $_SESSION['company'];
 if (empty($details) || $details==NULL || empty($details->name))
@@ -9,7 +10,7 @@ if (empty($details) || $details==NULL || empty($details->name))
 }
 // $details = $company_obj;
 
-echo '<table width=" 100%" border="0" cellspacing="2" cellpadding="0">
+echo '<table style="table-layout: fixed;" width=" 100%" border="0" cellspacing="2" cellpadding="0">
   <tr> 
     <th colspan="2"><h3>About '.$details->name.'</h3></th>
   </tr>
@@ -23,9 +24,11 @@ if (!empty($details->name)){
   </tr>';
 }
 if (!empty($details->websiteUrl)){
+  if (stripos($details->websiteUrl,"http://") === FALSE)
+    $details->websiteUrl = "http://".$details->websiteUrl;
   echo '<tr>
     <th scope="row">Website</th>
-    <td><a href="'.$details->websiteUrl.'" target="_blank">'.$details->websiteUrl.'</a></td>
+    <td style="word-wrap: break-word"><a href="'.$details->websiteUrl.'" target="_blank">'.$details->websiteUrl.'</a></td>
   </tr>';
 }
 if (!empty($details->twitterId)){
